@@ -1,0 +1,17 @@
+### Listar todas as matrículas
+GET https://localhost:5005/api/enrollment
+
+### Buscar matrícula por ID
+GET https://localhost:5005/api/enrollment/1
+
+### Criar nova matrícula
+POST https://localhost:5005/api/enrollment
+Content-Type: application/json
+
+{
+  "idAluno": 1,
+  "idCurso": 1
+}
+
+### Deletar matrícula
+DELETE https://localhost:5005/api/enrollment/1

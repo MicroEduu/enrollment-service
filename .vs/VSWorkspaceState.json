@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\EnrollmentService",
+    "\\EnrollmentService\\Controllers",
+    "\\EnrollmentService\\Data",
+    "\\EnrollmentService\\DTO",
+    "\\EnrollmentService\\Repositories"
+  ],
+  "SelectedNode": "\\EnrollmentService\\DTO\\EnrollmentCreateDto.cs",
+  "PreviewInSolutionExplorer": false
+}
