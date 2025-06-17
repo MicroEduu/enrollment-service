@@ -14,11 +14,25 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Swagger com suporte a JWT
+// Add HttpContextAccessor for accessing HTTP context in services
+builder.Services.AddHttpContextAccessor();
+
+// Swagger com suporte a JWT e documentação completa
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Enrollment Service API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo 
+    { 
+        Title = "Enrollment Service API", 
+        Version = "v1",
+        Description = "API for managing student enrollments in courses",
+        Contact = new OpenApiContact
+        {
+            Name = "Development Team",
+            Email = "dev@company.com"
+        }
+    });
 
+    // Configuração de segurança JWT
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -26,7 +40,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Digite: Bearer {seu token JWT aqui}"
+        Description = "Enter 'Bearer' [space] and then your JWT token.\n\nExample: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -43,6 +57,22 @@ builder.Services.AddSwaggerGen(c =>
             new string[] {}
         }
     });
+
+    // Incluir comentários XML para documentação
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+
+    // Configurações adicionais para melhor apresentação
+    c.EnableAnnotations();
+    c.DescribeAllParametersInCamelCase();
+    
+    // Tags para organizar endpoints
+    c.TagActionsBy(api => new[] { api.GroupName ?? api.ActionDescriptor.RouteValues["controller"] });
+    c.DocInclusionPredicate((name, api) => true);
 });
 
 // Banco de dados
@@ -54,10 +84,15 @@ builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<IEnrollmentBusinessService, EnrollmentBusinessService>();
 builder.Services.AddHttpClient<IAuthService, AuthService>();
 builder.Services.AddHttpClient<ICourseService, CourseExternalService>();
-builder.Services.AddHttpContextAccessor();
+
 // JWT Settings
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = Encoding.ASCII.GetBytes(jwtSettings["SecretKey"]);
+var secretKey = jwtSettings["SecretKey"];
+if (string.IsNullOrEmpty(secretKey))
+{
+    throw new InvalidOperationException("JWT SecretKey is not configured");
+}
+var secretKeyBytes = Encoding.ASCII.GetBytes(secretKey);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -65,7 +100,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+            IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes),
             ValidateIssuer = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidateAudience = true,
@@ -126,13 +161,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// CORREÇÃO: Configuração de autorização mais explícita
+// Configuração de autorização
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("StudentOnly", policy =>
     {
         policy.RequireAuthenticatedUser();
         policy.RequireRole("Student");
+    });
+    options.AddPolicy("TeacherOnly", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Teacher");
+    });
+    options.AddPolicy("AdminOnly", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Admin");
+    });
+    options.AddPolicy("AdminOrTeacher", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Admin", "Teacher");
     });
 });
 
@@ -153,7 +203,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Enrollment Service API v1");
+        c.RoutePrefix = "swagger";
+        c.DocumentTitle = "Enrollment Service API";
+        c.DisplayRequestDuration();
+    });
 }
 
 app.UseCors("AllowAll");
@@ -162,4 +218,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Log startup information
+Console.WriteLine("🚀 Enrollment Service API iniciada!");
+Console.WriteLine($"📝 Swagger UI: {(app.Environment.IsDevelopment() ? "http://localhost:5263/swagger" : "Disponível apenas em desenvolvimento")}");
+Console.WriteLine("📋 Endpoints disponíveis:");
+Console.WriteLine("  POST /api/Enrollment - Matricular aluno");
+Console.WriteLine("  GET /api/Enrollment/courses/{id}/students - Listar alunos do curso");
+Console.WriteLine("  GET /api/Enrollment/students/{id}/courses - Listar cursos do aluno");
+
 app.Run();

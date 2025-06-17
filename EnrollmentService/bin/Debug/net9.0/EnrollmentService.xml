@@ -1,0 +1,513 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>EnrollmentService</name>
+    </assembly>
+    <members>
+        <member name="M:EnrollmentService.Controllers.EnrollmentController.Enroll(EnrollmentService.DTO.EnrollmentCreateDto)">
+            <summary>
+            Enroll a student in a course
+            </summary>
+            <param name="dto">Enrollment data</param>
+            <returns>Enrollment confirmation</returns>
+            <response code="200">Student successfully enrolled</response>
+            <response code="400">Invalid request data</response>
+            <response code="401">Unauthorized - invalid token</response>
+            <response code="403">Forbidden - only students can enroll</response>
+            <response code="404">Course not found</response>
+            <response code="409">Student already enrolled in this course</response>
+            <response code="500">Internal server error</response>
+        </member>
+        <member name="M:EnrollmentService.Controllers.EnrollmentController.GetStudentsByCourse(System.Int32)">
+            <summary>
+            Get all students enrolled in a specific course
+            </summary>
+            <param name="courseId">Course ID</param>
+            <returns>List of students enrolled in the course</returns>
+            <response code="200">List of students retrieved successfully</response>
+            <response code="401">Unauthorized - invalid token</response>
+            <response code="403">Forbidden - only admins and teachers can access</response>
+            <response code="404">Course not found</response>
+            <response code="500">Internal server error</response>
+        </member>
+        <member name="M:EnrollmentService.Controllers.EnrollmentController.GetStudentEnrollments(System.Int32)">
+            <summary>
+            Get all courses a student is enrolled in
+            </summary>
+            <param name="studentId">Student ID</param>
+            <returns>List of courses the student is enrolled in</returns>
+            <response code="200">List of courses retrieved successfully</response>
+            <response code="401">Unauthorized - invalid token</response>
+            <response code="403">Forbidden - insufficient permissions</response>
+            <response code="500">Internal server error</response>
+        </member>
+        <member name="M:EnrollmentService.Controllers.EnrollmentController.DebugAuth">
+            <summary>
+            Debug authentication information (Admin only)
+            </summary>
+            <returns>Authentication debug information</returns>
+            <response code="200">Debug information retrieved successfully</response>
+            <response code="401">Unauthorized - invalid token</response>
+            <response code="403">Forbidden - admin access required</response>
+        </member>
+        <member name="M:EnrollmentService.Controllers.EnrollmentController.DebugExternal(System.Int32)">
+            <summary>
+            Debug external service information (Admin only)
+            </summary>
+            <param name="userId">User ID to debug</param>
+            <returns>External service debug information</returns>
+            <response code="200">Debug information retrieved successfully</response>
+            <response code="401">Unauthorized - invalid token</response>
+            <response code="403">Forbidden - admin access required</response>
+            <response code="500">Internal server error</response>
+        </member>
+        <member name="T:EnrollmentService.Data.DataContext">
+            <summary>
+            Database context for the Enrollment Service
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Data.DataContext.Matriculas">
+            <summary>
+            Enrollments table
+            </summary>
+        </member>
+        <member name="M:EnrollmentService.Data.DataContext.SaveChanges">
+            <summary>
+            Override SaveChanges to automatically update timestamps
+            </summary>
+        </member>
+        <member name="M:EnrollmentService.Data.DataContext.SaveChangesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Override SaveChangesAsync to automatically update timestamps
+            </summary>
+        </member>
+        <member name="M:EnrollmentService.Data.DataContext.UpdateTimestamps">
+            <summary>
+            Updates timestamps for entities being modified
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.DTO.ClaimDto">
+            <summary>
+            Claim information for debugging
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.ClaimDto.Type">
+            <summary>
+            Claim type
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.ClaimDto.Value">
+            <summary>
+            Claim value
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.DTO.AuthDebugResponseDto">
+            <summary>
+            Authentication debug response
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.AuthDebugResponseDto.IsAuthenticated">
+            <summary>
+            Whether user is authenticated
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.AuthDebugResponseDto.Name">
+            <summary>
+            User name from identity
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.AuthDebugResponseDto.Claims">
+            <summary>
+            All claims in the token
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.AuthDebugResponseDto.UserId">
+            <summary>
+            User ID from token
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.AuthDebugResponseDto.Role">
+            <summary>
+            User role from token
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.DTO.CourseStudentsResponseDto">
+            <summary>
+            Response containing all students in a course
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.CourseStudentsResponseDto.CourseId">
+            <summary>
+            Course ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.CourseStudentsResponseDto.CourseName">
+            <summary>
+            Course name
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.CourseStudentsResponseDto.CourseDescription">
+            <summary>
+            Course description
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.CourseStudentsResponseDto.TeacherId">
+            <summary>
+            Teacher ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.CourseStudentsResponseDto.TotalEnrollments">
+            <summary>
+            Total number of enrollments
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.CourseStudentsResponseDto.TotalStudents">
+            <summary>
+            Total number of students
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.CourseStudentsResponseDto.Students">
+            <summary>
+            List of students enrolled in the course
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.DTO.EnrollmentSuccessResponseDto">
+            <summary>
+            Success response for enrollment
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.EnrollmentSuccessResponseDto.Message">
+            <summary>
+            Success message
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.EnrollmentSuccessResponseDto.EnrollmentId">
+            <summary>
+            Created enrollment ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.EnrollmentSuccessResponseDto.StudentId">
+            <summary>
+            Student ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.EnrollmentSuccessResponseDto.CourseId">
+            <summary>
+            Course ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.EnrollmentSuccessResponseDto.CourseName">
+            <summary>
+            Course name
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.EnrollmentSuccessResponseDto.EnrollmentDate">
+            <summary>
+            Enrollment date and time
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.DTO.ErrorResponseDto">
+            <summary>
+            Error response
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.ErrorResponseDto.Message">
+            <summary>
+            Error message
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.ErrorResponseDto.Details">
+            <summary>
+            Additional error details
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.DTO.ExternalServiceDebugResponseDto">
+            <summary>
+            External service debug response
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.ExternalServiceDebugResponseDto.UserFound">
+            <summary>
+            Whether user was found in external service
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.ExternalServiceDebugResponseDto.User">
+            <summary>
+            User data from external service
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.ExternalServiceDebugResponseDto.IsStudentByService">
+            <summary>
+            Whether external service considers user a student
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.DTO.StudentCourseDto">
+            <summary>
+            Course information for a student
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentCourseDto.EnrollmentId">
+            <summary>
+            Enrollment record ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentCourseDto.CourseId">
+            <summary>
+            Course ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentCourseDto.CourseName">
+            <summary>
+            Course name
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentCourseDto.CourseDescription">
+            <summary>
+            Course description
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentCourseDto.TeacherId">
+            <summary>
+            Teacher ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentCourseDto.EnrollmentDate">
+            <summary>
+            Date when student enrolled
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentCourseDto.TotalEnrollments">
+            <summary>
+            Total number of students enrolled in this course
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.DTO.StudentEnrollmentsResponseDto">
+            <summary>
+            Response containing all courses for a student
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentEnrollmentsResponseDto.StudentId">
+            <summary>
+            Student ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentEnrollmentsResponseDto.TotalCourses">
+            <summary>
+            Total number of courses the student is enrolled in
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentEnrollmentsResponseDto.Courses">
+            <summary>
+            List of courses the student is enrolled in
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.DTO.StudentInCourseDto">
+            <summary>
+            Student information in a course
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentInCourseDto.Id">
+            <summary>
+            Student ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentInCourseDto.FirstName">
+            <summary>
+            Student first name
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentInCourseDto.LastName">
+            <summary>
+            Student last name
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentInCourseDto.FullName">
+            <summary>
+            Student full name
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentInCourseDto.Email">
+            <summary>
+            Student email
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentInCourseDto.Role">
+            <summary>
+            Student role
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentInCourseDto.EnrollmentDate">
+            <summary>
+            Date when student enrolled in the course
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentInCourseDto.EnrollmentId">
+            <summary>
+            Enrollment record ID
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.DTO.StudentInCourseDto.IsActive">
+            <summary>
+            Whether the student account is active
+            </summary>
+        </member>
+        <member name="T:EnrollmentService.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:EnrollmentService.Migrations.CompleteStructure">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.CompleteStructure.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.CompleteStructure.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.CompleteStructure.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:EnrollmentService.Migrations.CompleteStucture">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.CompleteStucture.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.CompleteStucture.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.CompleteStucture.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:EnrollmentService.Migrations.UpdateEnrollmentTable">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.UpdateEnrollmentTable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.UpdateEnrollmentTable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:EnrollmentService.Migrations.UpdateEnrollmentTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:EnrollmentService.Models.Enrollment">
+            <summary>
+            Represents a student enrollment in a course
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.Id">
+            <summary>
+            Unique identifier for the enrollment
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.IdAluno">
+            <summary>
+            Student ID (foreign key to User service)
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.IdCurso">
+            <summary>
+            Course ID (foreign key to Course service)
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.DataMatricula">
+            <summary>
+            Date and time when the enrollment was created
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.CreatedAt">
+            <summary>
+            Date and time when the enrollment record was created
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.UpdatedAt">
+            <summary>
+            Date and time when the enrollment record was last updated
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.IsActive">
+            <summary>
+            Whether the enrollment is active (soft delete support)
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.Notes">
+            <summary>
+            Additional notes about the enrollment
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.Status">
+            <summary>
+            Enrollment status (Enrolled, Withdrawn, Completed, etc.)
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.StudentName">
+            <summary>
+            Student information (not mapped - comes from external service)
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.CourseName">
+            <summary>
+            Course information (not mapped - comes from external service)
+            </summary>
+        </member>
+        <member name="P:EnrollmentService.Models.Enrollment.TeacherName">
+            <summary>
+            Teacher information (not mapped - comes from external service)
+            </summary>
+        </member>
+        <member name="M:EnrollmentService.Models.Enrollment.IsCurrentlyEnrolled">
+            <summary>
+            Checks if the enrollment is currently active
+            </summary>
+            <returns>True if enrollment is active and status is "Enrolled"</returns>
+        </member>
+        <member name="M:EnrollmentService.Models.Enrollment.Withdraw(System.String)">
+            <summary>
+            Marks the enrollment as withdrawn
+            </summary>
+            <param name="reason">Reason for withdrawal</param>
+        </member>
+        <member name="M:EnrollmentService.Models.Enrollment.Complete">
+            <summary>
+            Marks the enrollment as completed
+            </summary>
+        </member>
+        <member name="M:EnrollmentService.Models.Enrollment.SoftDelete(System.String)">
+            <summary>
+            Soft deletes the enrollment
+            </summary>
+            <param name="reason">Reason for deletion</param>
+        </member>
+        <member name="M:EnrollmentService.Models.Enrollment.UpdateTimestamp">
+            <summary>
+            Updates the timestamp when the record is modified
+            </summary>
+        </member>
+        <member name="M:EnrollmentService.Models.Enrollment.GetEnrollmentDurationInDays">
+            <summary>
+            Gets the duration of the enrollment in days
+            </summary>
+            <returns>Number of days since enrollment</returns>
+        </member>
+        <member name="M:EnrollmentService.Models.Enrollment.ToString">
+            <summary>
+            Returns a formatted string representation of the enrollment
+            </summary>
+            <returns>Formatted enrollment information</returns>
+        </member>
+        <member name="T:EnrollmentService.Models.EnrollmentStatus">
+            <summary>
+            Enumeration for enrollment statuses
+            </summary>
+        </member>
+    </members>
+</doc>
