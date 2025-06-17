@@ -15,7 +15,7 @@ namespace EnrollmentService.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
             modelBuilder.Entity("EnrollmentService.Models.Enrollment", b =>
                 {
@@ -23,21 +23,74 @@ namespace EnrollmentService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("CreatedAt")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
                     b.Property<DateTime>("DataMatricula")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("EnrollmentDate");
 
                     b.Property<int>("IdAluno")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("StudentId");
 
                     b.Property<int>("IdCurso")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("CourseId");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true)
+                        .HasColumnName("IsActive");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Notes");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Enrolled")
+                        .HasColumnName("Status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("UpdatedAt")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdAluno", "IdCurso")
-                        .IsUnique();
+                    b.HasIndex("DataMatricula")
+                        .HasDatabaseName("IX_Enrollment_Date");
 
-                    b.ToTable("Matriculas");
+                    b.HasIndex("IdAluno")
+                        .HasDatabaseName("IX_Enrollment_Student");
+
+                    b.HasIndex("IdCurso")
+                        .HasDatabaseName("IX_Enrollment_Course");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Enrollment_IsActive");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Enrollment_Status");
+
+                    b.HasIndex("IdAluno", "IdCurso")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Enrollment_Student_Course");
+
+                    b.HasIndex("IsActive", "Status")
+                        .HasDatabaseName("IX_Enrollment_Active_Status");
+
+                    b.ToTable("Enrollments");
                 });
 #pragma warning restore 612, 618
         }

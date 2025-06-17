@@ -28,12 +28,20 @@ namespace EnrollmentService.ExternalServices
         public string Tipo => RoleName;
     } 
  
+    // CORREÇÃO: Modelo que corresponde EXATAMENTE à resposta da API de cursos
     public class CourseDto 
     { 
         public int Id { get; set; } 
-        public string Titulo { get; set; } = string.Empty; 
-        public string Descricao { get; set; } = string.Empty; 
-        public int IdProfessor { get; set; } 
-        public int QuantidadeInscritos { get; set; } 
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int IdTeacher { get; set; } // Campo "idTeacher" da API de cursos
+        public int NumberSubscribers { get; set; } // Campo "numberSubscribers" da API de cursos  
+        public DateTime CreatedAt { get; set; } // Campo "createdAt" da API de cursos
+        
+        // Propriedades auxiliares para compatibilidade com código existente
+        public string Titulo => Title;
+        public string Descricao => Description;
+        public int QuantidadeInscritos => NumberSubscribers;
+        public int IdProfessor => IdTeacher; // Mapear IdTeacher para IdProfessor
     } 
 }
