@@ -59,7 +59,7 @@ namespace EnrollmentService.Services
                 var json = JsonSerializer.Serialize(updateData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PutAsync($"{courseServiceUrl}/api/Course/{courseId}/enrollment-count", content);
+                var response = await _httpClient.PatchAsync($"{courseServiceUrl}/api/Course/increment-subscriber/{courseId}", null);
                 return response.IsSuccessStatusCode;
             }
             catch
