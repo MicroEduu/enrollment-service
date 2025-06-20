@@ -1,10 +1,38 @@
 # Guia de Testes - Enrollment Service API
 
-## 🚀 **Endpoints Disponíveis**
+## 🚀 **Como Executar**
+
+### **Pré-requisitos:**
+- .NET 6.0 ou superior
+- SQLite (já incluído)
+
+### **Executando a API:**
+```bash
+# Clone o repositório
+git clone <seu-repositorio>
+cd EnrollmentService
+
+# Restaurar dependências
+dotnet restore
+
+# Executar a aplicação
+dotnet run
+
+# A API estará disponível em:
+# - http://localhost:5263
+# - Swagger UI: http://localhost:5263/swagger
+```
+
+### **Configuração:**
+- O banco SQLite será criado automaticamente
+- Configure o JWT SecretKey no `appsettings.json`
+- Configure as URLs dos serviços externos (AuthService e CourseService)
+
+## 🔗 **Endpoints Disponíveis**
 
 ### **1. Matricular Aluno** `POST /api/Enrollment`
 - **Acesso:** Students only
-- **Descrição:** Matricula um aluno em um curso
+- **Descrição:** Matricula um aluno em um curso e incrementa automaticamente o contador de inscrições do curso
 
 ```bash
 curl -X 'POST' \
@@ -29,8 +57,14 @@ curl -X 'POST' \
 }
 ```
 
+**Funcionalidades:**
+- ✅ Verifica se o curso existe
+- ✅ Verifica se o aluno já está matriculado
+- ✅ Cria a matrícula no banco local
+- ✅ **Incrementa automaticamente o contador de inscrições no serviço de cursos**
+
 ### **2. Listar Alunos do Curso** `GET /api/Enrollment/courses/{courseId}/students`
-- **Acesso:** Admin e Teacher
+- **Acesso:** Admin e Teacher (apenas próprios cursos)
 - **Descrição:** Lista todos os alunos matriculados em um curso
 
 ```bash
@@ -126,7 +160,6 @@ curl -X 'GET' \
 
 ### **Sucesso:**
 - `200 OK` - Operação realizada com sucesso
-- `201 Created` - Recurso criado com sucesso
 
 ### **Erro do Cliente:**
 - `400 Bad Request` - Dados inválidos na requisição
@@ -141,7 +174,7 @@ curl -X 'GET' \
 ## 🧪 **Cenários de Teste**
 
 ### **✅ Cenários de Sucesso:**
-1. Student se matricula em curso válido
+1. Student se matricula em curso válido (contador incrementado automaticamente)
 2. Admin visualiza alunos de qualquer curso
 3. Teacher visualiza alunos dos próprios cursos
 4. Student visualiza próprias matrículas
@@ -155,35 +188,6 @@ curl -X 'GET' \
 5. Student/Teacher tenta acessar debug (403)
 6. Requisição sem token (401)
 7. Token inválido ou expirado (401)
-
-## 🔄 **Workflow Típico**
-
-### **1. Processo de Matrícula:**
-```
-1. Student faz login → recebe JWT token
-2. Student escolhe curso
-3. POST /api/Enrollment com dados do curso
-4. Sistema verifica se curso existe
-5. Sistema verifica se aluno já está matriculado
-6. Cria matrícula e incrementa contador do curso
-7. Retorna confirmação
-```
-
-### **2. Consulta de Alunos (Professor):**
-```
-1. Teacher faz login → recebe JWT token
-2. GET /api/Enrollment/courses/{courseId}/students
-3. Sistema verifica se professor é dono do curso
-4. Retorna lista de alunos matriculados
-```
-
-### **3. Consulta de Matrículas (Aluno):**
-```
-1. Student faz login → recebe JWT token
-2. GET /api/Enrollment/students/{studentId}/courses
-3. Sistema verifica se é o próprio aluno
-4. Retorna lista de cursos matriculados
-```
 
 ## 🛠 **Troubleshooting**
 
@@ -212,3 +216,18 @@ A API gera logs detalhados para:
 - Erros e exceções
 
 Use os logs para diagnosticar problemas de integração e autorização.
+
+## 🔄 **Integrações**
+
+### **Serviços Externos:**
+- **AuthService**: Validação de usuários e roles
+- **CourseService**: Consulta e atualização de cursos
+
+### **Processo de Matrícula:**
+1. Student faz requisição com token JWT
+2. Sistema valida token e verifica role "Student"
+3. Verifica se curso existe no CourseService
+4. Verifica se aluno já está matriculado
+5. Cria matrícula no banco local
+6. **Atualiza contador de inscrições no CourseService**
+7. Retorna confirmação da matrícula
